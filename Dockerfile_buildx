@@ -12,3 +12,6 @@ FROM --platform=${TARGETPLATFORM} alpine:latest
 COPY --from=builder /root/src/mosdns /usr/bin/
 
 RUN apk add --no-cache ca-certificates
+
+ENTRYPOINT ["/usr/bin/mosdns"]
+CMD ["start", "-c", "/etc/mosdns/config.yaml"]
