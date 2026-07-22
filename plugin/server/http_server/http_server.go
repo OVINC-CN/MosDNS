@@ -35,7 +35,10 @@ import (
 	"golang.org/x/net/http2"
 )
 
-const PluginType = "http_server"
+const (
+	PluginType            = "http_server"
+	defaultMaxHeaderBytes = 16 * 1024
+)
 
 func init() {
 	coremain.RegNewPluginFunc(PluginType, Init, func() any { return new(Args) })
@@ -46,11 +49,12 @@ type Args struct {
 		Exec string `yaml:"exec"`
 		Path string `yaml:"path"`
 	} `yaml:"entries"`
-	Listen      string `yaml:"listen"`
-	SrcIPHeader string `yaml:"src_ip_header"`
-	Cert        string `yaml:"cert"`
-	Key         string `yaml:"key"`
-	IdleTimeout int    `yaml:"idle_timeout"`
+	Listen         string `yaml:"listen"`
+	SrcIPHeader    string `yaml:"src_ip_header"`
+	Cert           string `yaml:"cert"`
+	Key            string `yaml:"key"`
+	IdleTimeout    int    `yaml:"idle_timeout"`
+	MaxHeaderBytes int    `yaml:"max_header_bytes"`
 }
 
 func (a *Args) init() {
@@ -72,6 +76,14 @@ func Init(bp *coremain.BP, args any) (any, error) {
 }
 
 func StartServer(bp *coremain.BP, args *Args) (*HttpServer, error) {
+	maxHeaderBytes := args.MaxHeaderBytes
+	if maxHeaderBytes == 0 {
+		maxHeaderBytes = defaultMaxHeaderBytes
+	}
+	if maxHeaderBytes < 0 {
+		return nil, fmt.Errorf("max_header_bytes must not be negative")
+	}
+
 	mux := http.NewServeMux()
 	for _, entry := range args.Entries {
 		dh, err := server_utils.NewHandler(bp, entry.Exec)
@@ -106,7 +118,7 @@ func StartServer(bp *coremain.BP, args *Args) (*HttpServer, error) {
 		Handler:        mux,
 		ReadTimeout:    time.Second,
 		IdleTimeout:    time.Duration(args.IdleTimeout) * time.Second,
-		MaxHeaderBytes: 512,
+		MaxHeaderBytes: maxHeaderBytes,
 	}
 	if err := http2.ConfigureServer(hs, &http2.Server{
 		MaxReadFrameSize:             16 * 1024,
