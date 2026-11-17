@@ -4,11 +4,11 @@ go 1.26
 
 require (
 	github.com/IrineSistiana/go-bytes-pool v0.0.0-20230918115058-c72bd9761c57
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/nftables v0.3.0
 	github.com/kardianos/service v1.2.4
-	github.com/klauspost/compress v1.18.4
+	github.com/klauspost/compress v1.20.4
 	github.com/miekg/dns v1.1.72
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nadoo/ipset v0.5.0
